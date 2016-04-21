@@ -29,17 +29,18 @@ namespace Synonyms.api
                         newSyn.Synonyms += synonym.Term;
                         synonymDto.Add(newSyn);
                     }
-                    else
-                    {
-                        var repeatedSyn = synonymDto.Find(x => x.Term == syn);
-                        if (repeatedSyn.Synonyms != null) repeatedSyn.Synonyms += ',';
-                        repeatedSyn.Synonyms += synonym.Term;
-                    }
                 }
                 if (viewModelList.Exists(x => x.Term == synonym.Term))
                 {
                     var repeatedSyn = viewModelList.Find(x => x.Term == synonym.Term);
-                    repeatedSyn.Synonyms.Add(synonym.Synonyms);
+                    foreach (string syn in synonyms)
+                    {
+                        if (repeatedSyn.Synonyms.Exists(x => x == syn) == false)
+                        {
+                            repeatedSyn.Synonyms.Add(syn);
+                        }
+                    }
+                    
                 }
                 else
                 {
@@ -56,8 +57,12 @@ namespace Synonyms.api
         {
             if(value.Synonyms != null && value.Term != null)
             {
-                db.SynonymDtoes.Add(value);
-                db.SaveChanges();
+                var synonyms = value.Synonyms.Split(',');
+                if (synonyms.First(x => x == value.Term) == null)
+                {
+                    db.SynonymDtoes.Add(value);
+                    db.SaveChanges();
+                }
             }
         }
 
