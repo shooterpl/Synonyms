@@ -10,8 +10,14 @@ namespace Synonyms.Controllers
     {
         public ActionResult Index()
         {
-            ViewBag.Title = "Home Page";
+            ViewBag.Title = "Dictionary";
 
+            return View();
+        }
+
+        public ActionResult Search()
+        {
+            ViewBag.Title = "Search";
             return View();
         }
     }

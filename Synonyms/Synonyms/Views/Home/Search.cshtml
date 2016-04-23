@@ -1,0 +1,28 @@
+﻿<h2>Search</h2>
+<input type="text" id="synonym" name="synonym"><br>
+<button type="submit" value="Submit" onclick="searching()">Submit</button><br />
+
+<div id="synonym-list" class="synonym-list"></div>
+<script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.0.3.min.js"></script>
+<script src="~/Scripts/search.js"></script>
+
+
+
+<style>
+    .list {
+        color: white;
+        background-color: gray;
+        border-radius: 5px;
+        font-size: 16px;
+        padding: 4px;
+        margin-right: 10px;
+        margin-top: 8px;
+    }
+
+    .term {
+        color: red;
+        text-decoration: underline;
+        margin-top: 15px;
+        font-size: 20px;
+    }
+</style>

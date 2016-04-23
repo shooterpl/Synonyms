@@ -3,6 +3,8 @@ using System.Linq;
 using System.Web.Http;
 using Synonyms.Models;
 using Synonyms.ViewModel;
+using System;
+
 namespace Synonyms.api
 {
     public class SynonymDtoesController : ApiController
@@ -13,64 +15,78 @@ namespace Synonyms.api
         {
             var synonymDto = db.SynonymDtoes.ToList();
             List<SynonymDtoViewModel> viewModelList = new List<SynonymDtoViewModel>();
-            for (int i = 0; i < synonymDto.Count(); i++)
+            foreach (SynonymDto synonym in synonymDto)
             {
-                SynonymDto synonym = synonymDto[i];
                 SynonymDtoViewModel viewModel = new SynonymDtoViewModel();
-
-                var synonyms = synonym.Synonyms.Split(',');
-                foreach (string syn in synonyms)
-                {
-                    if (synonymDto.Exists(x => x.Term == syn) == false)
-                    {
-                        SynonymDto newSyn = new SynonymDto();
-                        newSyn.Term = syn;
-                        if (newSyn.Synonyms != null) newSyn.Synonyms += ',';
-                        newSyn.Synonyms += synonym.Term;
-                        synonymDto.Add(newSyn);
-                    }
-                }
-                if (viewModelList.Exists(x => x.Term == synonym.Term))
-                {
-                    var repeatedSyn = viewModelList.Find(x => x.Term == synonym.Term);
-                    foreach (string syn in synonyms)
-                    {
-                        if (repeatedSyn.Synonyms.Exists(x => x == syn) == false)
-                        {
-                            repeatedSyn.Synonyms.Add(syn);
-                        }
-                    }
-                    
-                }
-                else
+                if (viewModelList.Exists(x => x.Term == synonym.Term) == false)
                 {
                     viewModel.Term = synonym.Term;
+                    IList<string> synonyms = synonym.Synonyms.Split(',');
                     viewModel.Synonyms = synonyms.ToList();
                     viewModelList.Add(viewModel);
+                } 
+                
+            }
+            foreach (SynonymDto synonym in synonymDto)
+            {
+                IList<string> synonyms = synonym.Synonyms.Split(',');
+                foreach (string syn in synonyms)
+                {
+                    var temp = viewModelList.FirstOrDefault(x => x.Term == syn);
+                    if (temp != null) temp.Synonyms.Add(synonym.Term);
+                    else
+                    {
+                        try
+                        {
+
+                            SynonymDtoViewModel viewModel = new SynonymDtoViewModel();
+                            viewModel.Term = syn;
+                            List<string> lista = new List<string>();
+                            lista.Add(synonym.Term);
+                            viewModel.Synonyms = lista;
+                            viewModelList.Add(viewModel);
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e.Message);
+                        }
+                    }
+                    var temp2 = viewModelList.FirstOrDefault(x => x.Term == synonym.Term);
+                    if (temp2.Synonyms.Exists(x => x == syn) == false) temp2.Synonyms.Add(syn);
                 }
             }
             return viewModelList;
         }
-        
+
         public void Post([FromBody]SynonymDto value)
 
         {
-            if(value.Synonyms != null && value.Term != null)
+            if (value.Synonyms != null && value.Term != null)
             {
-                var synonyms = value.Synonyms.Split(',');
-                if (synonyms.First(x => x == value.Term) == null)
+                try
                 {
-                    db.SynonymDtoes.Add(value);
-                    db.SaveChanges();
+                    var synonyms = value.Synonyms.Split(',');
+                    if (synonyms.FirstOrDefault(x => x == value.Term) == null)
+                    {
+                        db.SynonymDtoes.Add(value);
+                        db.SaveChanges();
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("{0} Exception caught.", e);
                 }
             }
         }
-
- 
 
         private bool SynonymDtoExists(int id)
         {
             return db.SynonymDtoes.Count(e => e.Id == id) > 0;
         }
+    }
+
+    public class SynonymPost
+    {
+        public string Term;
     }
 }
